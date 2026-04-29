@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -12,8 +13,8 @@ export default function Home() {
           </p>
         </div>
 
-        <Button variant="outline" size="lg" className="w-full" onClick={() => window.location.href = "/login"}>
-          Go to Login
+        <Button asChild variant="outline" size="lg" className="w-full">
+          <Link href="/login">Go to Login</Link>
         </Button>
       </div>
     </div>
