@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
@@ -32,11 +33,17 @@ export const authOptions: NextAuthOptions = {
         const isValid = email === DUMMY_USER.email && password === DUMMY_USER.password;
         if (!isValid) return null;
 
+        const payload = `${DUMMY_USER.id}:${Date.now()}`;
+        const accessToken = crypto
+          .createHmac("sha256", process.env.NEXTAUTH_SECRET ?? "secret")
+          .update(payload)
+          .digest("hex");
+
         return {
           id: DUMMY_USER.id,
           name: DUMMY_USER.name,
           email: DUMMY_USER.email,
-          accessToken: "dummy-access-token",
+          accessToken,
         };
       },
     }),
