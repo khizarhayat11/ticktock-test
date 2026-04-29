@@ -51,12 +51,7 @@ export function TimesheetsTable({ items }: { items: Timesheet[] }) {
               const actionLabel =
                 t.status === "completed" ? "View" : t.status === "incomplete" ? "Update" : "Create";
 
-              const href =
-                t.status === "completed"
-                  ? `/dashboard/timesheets/${t.id}`
-                  : t.status === "incomplete"
-                    ? `/dashboard/timesheets/${t.id}/edit`
-                    : `/dashboard/timesheets/new?week=${t.week}`;
+              const href = `/dashboard/timesheets/${t.id}`;
 
               return (
                 <TableRow key={t.id}>

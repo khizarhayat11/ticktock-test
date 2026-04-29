@@ -18,14 +18,13 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
-      <main className="flex-1 bg-muted/30">{children}</main>
 
+      <main className="flex-1 bg-muted/30">{children}</main>
       
-      {/*
-      As per design we dont need footer here in layout but if we want to add footer then we can uncomment below code and import SiteFooter component from layout folder
-      <SiteFooter />
-      
-       */}
+      {/* As per design we don't need footer here in layout 
+      but if we want to add footer then we can uncomment below 
+      code and import SiteFooter component from layout folder */}
+      {/* <SiteFooter />*/}
     </div>
   );
 }
