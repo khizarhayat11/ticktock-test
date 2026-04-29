@@ -6,11 +6,10 @@ export async function proxy(request: NextRequest) {
 
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
-  const hasSessionCookie =
-    request.cookies.has("next-auth.session-token") ||
-    request.cookies.has("__Secure-next-auth.session-token");
-
-  const isLoggedIn = Boolean(token) || hasSessionCookie;
+  // Important: do NOT treat the mere presence of a session cookie as authenticated.
+  // Stale/invalid cookies would cause /login -> /dashboard redirects and then bounce
+  // back to /login (redirect loop). A verified token avoids that.
+  const isLoggedIn = Boolean(token);
 
   // Proxy behavior for the root page (src/app/page.tsx)
   if (pathname === "/") {
