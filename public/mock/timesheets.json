@@ -1,0 +1,22 @@
+[
+  { "id": "week-1", "week": 1, "startDate": "2024-01-01", "endDate": "2024-01-05", "status": "completed" },
+  { "id": "week-2", "week": 2, "startDate": "2024-01-08", "endDate": "2024-01-12", "status": "completed" },
+  { "id": "week-3", "week": 3, "startDate": "2024-01-15", "endDate": "2024-01-19", "status": "incomplete" },
+  { "id": "week-4", "week": 4, "startDate": "2024-01-22", "endDate": "2024-01-26", "status": "completed" },
+  { "id": "week-5", "week": 5, "startDate": "2024-01-29", "endDate": "2024-02-02", "status": "missing" },
+  { "id": "week-6", "week": 6, "startDate": "2024-02-05", "endDate": "2024-02-09", "status": "incomplete" },
+  { "id": "week-7", "week": 7, "startDate": "2024-02-12", "endDate": "2024-02-16", "status": "completed" },
+  { "id": "week-8", "week": 8, "startDate": "2024-02-19", "endDate": "2024-02-23", "status": "completed" },
+  { "id": "week-9", "week": 9, "startDate": "2024-02-26", "endDate": "2024-03-01", "status": "incomplete" },
+  { "id": "week-10", "week": 10, "startDate": "2024-03-04", "endDate": "2024-03-08", "status": "missing" },
+  { "id": "week-11", "week": 11, "startDate": "2024-03-11", "endDate": "2024-03-15", "status": "completed" },
+  { "id": "week-12", "week": 12, "startDate": "2024-03-18", "endDate": "2024-03-22", "status": "incomplete" },
+  { "id": "week-13", "week": 13, "startDate": "2024-03-25", "endDate": "2024-03-29", "status": "completed" },
+  { "id": "week-14", "week": 14, "startDate": "2024-04-01", "endDate": "2024-04-05", "status": "completed" },
+  { "id": "week-15", "week": 15, "startDate": "2024-04-08", "endDate": "2024-04-12", "status": "missing" },
+  { "id": "week-16", "week": 16, "startDate": "2024-04-15", "endDate": "2024-04-19", "status": "completed" },
+  { "id": "week-17", "week": 17, "startDate": "2024-04-22", "endDate": "2024-04-26", "status": "completed" },
+  { "id": "week-18", "week": 18, "startDate": "2024-04-29", "endDate": "2024-05-03", "status": "incomplete" },
+  { "id": "week-19", "week": 19, "startDate": "2024-05-06", "endDate": "2024-05-10", "status": "completed" },
+  { "id": "week-20", "week": 20, "startDate": "2024-05-13", "endDate": "2024-05-17", "status": "missing" }
+]
