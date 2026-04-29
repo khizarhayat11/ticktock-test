@@ -69,7 +69,9 @@ export function TimesheetsTable({ items }: { items: Timesheet[] }) {
                   </TableCell>
                   <TableCell className="px-6 py-4 text-right">
                     <Button asChild variant="link" size="sm" className="h-auto px-0 text-link">
-                      <Link href={href}>{actionLabel}</Link>
+                      <Link href={href} prefetch={false}>
+                        {actionLabel}
+                      </Link>
                     </Button>
                   </TableCell>
                 </TableRow>

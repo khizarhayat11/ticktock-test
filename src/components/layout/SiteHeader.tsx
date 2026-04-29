@@ -42,7 +42,11 @@ export function SiteHeader() {
     <header className="border-b bg-background">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="text-xl font-semibold tracking-tight">
+          <Link
+            href="/dashboard"
+            prefetch={false}
+            className="text-xl font-semibold tracking-tight"
+          >
             ticktock
           </Link>
 
@@ -55,7 +59,9 @@ export function SiteHeader() {
                 size="lg"
                 className="text-foreground hover:text-foreground"
               >
-                <Link href={item.href}>{item.label}</Link>
+                <Link href={item.href} prefetch={false}>
+                  {item.label}
+                </Link>
               </Button>
             ))}
           </nav>
