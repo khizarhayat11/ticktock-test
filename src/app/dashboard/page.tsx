@@ -1,8 +1,10 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
+import { TimesheetsClient } from "@/components/features/timesheets/TimesheetsClient";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 
-export default async function DashboardPage() {
+export default async function Dashboard() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
@@ -10,11 +12,10 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 items-center justify-center px-4 py-10">
-      <div className="w-full max-w-xl space-y-2">
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <div className="text-sm">Signed in as {session.user?.email}</div>
-      </div>
+    <div className="mx-auto w-full max-w-6xl px-4 py-8">
+      <TimesheetsClient />
+
+      <SiteFooter />
     </div>
   );
 }
