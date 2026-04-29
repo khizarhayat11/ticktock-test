@@ -10,7 +10,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 items-center justify-center px-4 py-10">
       <div className="w-full max-w-xl space-y-2">
         <h1 className="text-2xl font-semibold">Dashboard</h1>
         <div className="text-sm">Signed in as {session.user?.email}</div>
