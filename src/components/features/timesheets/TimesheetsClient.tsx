@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Timesheet, TimesheetsFiltersState } from "@/types/timesheet";
 import { monthKey, parseTimesheetsJson } from "@/lib/utils";
+import { getTimesheetsSourceUrl } from "@/lib/timesheets-data-source";
 import { TimesheetsFilters } from "./TimesheetsFilters";
 import { TimesheetsTable } from "./TimesheetsTable";
+import { TimesheetsTableSkeleton } from "../../skeleton/TimesheetsTableSkeleton";
 import { TimesheetsPagination, TimesheetsPageSize } from "./TimesheetsPagination";
 
 type PaginationState = {
@@ -30,7 +32,7 @@ export function TimesheetsClient() {
       setError(null);
 
       try {
-        const res = await fetch("/mock/timesheets.json", { signal: controller.signal });
+        const res = await fetch(getTimesheetsSourceUrl(), { signal: controller.signal });
 
         if (!res.ok) {
           throw new Error(`Failed to load timesheets (${res.status})`);
@@ -136,7 +138,11 @@ export function TimesheetsClient() {
           />
         </div>
 
-        {!isLoading && <TimesheetsTable items={pageItems} />}
+        {isLoading ? (
+          <TimesheetsTableSkeleton rows={pagination.pageSize} />
+        ) : (
+          <TimesheetsTable items={pageItems} />
+        )}
 
         <div className="flex flex-col gap-3 border-t p-4 sm:flex-row sm:items-center sm:justify-between">
           <TimesheetsPageSize value={pagination.pageSize} onChange={handlePageSizeChange} />
