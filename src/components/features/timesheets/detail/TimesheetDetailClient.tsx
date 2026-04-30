@@ -1,16 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
-import type { Timesheet, TimesheetStatus } from "@/types/timesheet";
-import type { TimesheetTask, TimesheetDay } from "@/types/timesheet-detail";
+import type {
+  Timesheet,
+  TimesheetDay,
+  TimesheetStatus,
+  TimesheetTask,
+  TimesheetTaskDraft,
+  TimesheetTasksByDay,
+} from "@/types/timesheet";
 import {
-  dayKey,
-  eachDayInclusive,
+  buildTimesheetDays,
   formatDateRange,
-  formatDayLabel,
   parseTimesheetJson,
+  sumTimesheetHours,
 } from "@/lib/utils";
 import { getTimesheetSourceUrlById } from "@/lib/timesheets-data-source";
 
@@ -35,15 +40,15 @@ function createClientTaskId(prefix: string) {
 
 function createTemplateTasks({
   timesheetId,
-  dayKey,
+  taskDayKey,
   count,
 }: {
   timesheetId: string;
-  dayKey: string;
+  taskDayKey: string;
   count: number;
 }): TimesheetTask[] {
   return Array.from({ length: count }, (_, index) => ({
-    id: makeStableTaskId(timesheetId, dayKey, index),
+    id: makeStableTaskId(timesheetId, taskDayKey, index),
     name: "Homepage Development",
     project: "Project Name",
     workType: "Development",
@@ -64,8 +69,8 @@ function buildInitialTasks({
   timesheetId: string;
   status: TimesheetStatus;
   days: TimesheetDay[];
-}): Record<string, TimesheetTask[]> {
-  const byDay: Record<string, TimesheetTask[]> = {};
+}): TimesheetTasksByDay {
+  const byDay: TimesheetTasksByDay = {};
 
   // Deterministic initial data based on the timesheet status.
   for (let i = 0; i < days.length; i += 1) {
@@ -78,12 +83,12 @@ function buildInitialTasks({
 
     if (status === "incomplete") {
       const count = i === 0 || i === 1 ? 2 : i === 2 ? 1 : 0;
-      byDay[key] = createTemplateTasks({ timesheetId, dayKey: key, count });
+      byDay[key] = createTemplateTasks({ timesheetId, taskDayKey: key, count });
       continue;
     }
 
     // completed
-    byDay[key] = createTemplateTasks({ timesheetId, dayKey: key, count: 2 });
+    byDay[key] = createTemplateTasks({ timesheetId, taskDayKey: key, count: 2 });
   }
 
   return byDay;
@@ -94,7 +99,7 @@ export function TimesheetDetailClient({ timesheetId }: { timesheetId: string }) 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [tasksByDay, setTasksByDay] = useState<Record<string, TimesheetTask[]>>({});
+  const [tasksByDay, setTasksByDay] = useState<TimesheetTasksByDay>({});
   const [dialogState, setDialogState] = useState<DialogState>(null);
 
   useEffect(() => {
@@ -114,14 +119,9 @@ export function TimesheetDetailClient({ timesheetId }: { timesheetId: string }) 
 
         const json: unknown = await res.json();
         const found = parseTimesheetJson(json);
+        const days = buildTimesheetDays(found.startDate, found.endDate);
+
         setTimesheet(found);
-
-        const days = eachDayInclusive(found.startDate, found.endDate).map((date) => ({
-          key: dayKey(date),
-          date,
-          label: formatDayLabel(date),
-        }));
-
         setTasksByDay(buildInitialTasks({ timesheetId: found.id, status: found.status, days }));
       } catch (err) {
         if (controller.signal.aborted) return;
@@ -140,57 +140,34 @@ export function TimesheetDetailClient({ timesheetId }: { timesheetId: string }) 
     return () => controller.abort();
   }, [timesheetId]);
 
-  const days: TimesheetDay[] = useMemo(() => {
-    if (!timesheet) return [];
-    return eachDayInclusive(timesheet.startDate, timesheet.endDate).map((date) => ({
-      key: dayKey(date),
-      date,
-      label: formatDayLabel(date),
-    }));
-  }, [timesheet]);
-
-  const loggedHours = useMemo(() => {
-    let total = 0;
-    for (const key of Object.keys(tasksByDay)) {
-      for (const t of tasksByDay[key] ?? []) {
-        total += Number.isFinite(t.hours) ? t.hours : 0;
-      }
-    }
-    return total;
-  }, [tasksByDay]);
-
-  const targetHours = useMemo(() => {
-    // Reasonable default: 8hrs per day in the date range.
-    return days.length * 8;
-  }, [days.length]);
-
-  const percent = useMemo(() => {
-    if (targetHours <= 0) return 0;
-    return Math.max(0, Math.min(100, Math.round((loggedHours / targetHours) * 100)));
-  }, [loggedHours, targetHours]);
-
-  const progressStatus: TimesheetStatus | null = useMemo(() => {
-    if (!timesheet) return null;
-    if (targetHours <= 0) return timesheet.status;
-
-    if (loggedHours <= 0) return "missing";
-    if (loggedHours >= targetHours) return "completed";
-    return "incomplete";
-  }, [loggedHours, targetHours, timesheet]);
-
-  const progressBarClassName = useMemo(() => {
-    const status = progressStatus ?? "incomplete";
-    return status === "completed"
+  const days: TimesheetDay[] = timesheet
+    ? buildTimesheetDays(timesheet.startDate, timesheet.endDate)
+    : [];
+  const loggedHours = sumTimesheetHours(tasksByDay);
+  const targetHours = days.length * 8;
+  const percent =
+    targetHours <= 0
+      ? 0
+      : Math.max(0, Math.min(100, Math.round((loggedHours / targetHours) * 100)));
+  const progressStatus: TimesheetStatus | null =
+    !timesheet
+      ? null
+      : targetHours <= 0
+        ? timesheet.status
+        : loggedHours <= 0
+          ? "missing"
+          : loggedHours >= targetHours
+            ? "completed"
+            : "incomplete";
+  const progressBarClassName =
+    progressStatus === "completed"
       ? "bg-status-completed-foreground"
-      : status === "missing"
+      : progressStatus === "missing"
         ? "bg-status-missing-foreground"
         : "bg-status-incomplete-foreground";
-  }, [progressStatus]);
-
-  const dateRangeLabel = useMemo(() => {
-    if (!timesheet) return "";
-    return formatDateRange(timesheet.startDate, timesheet.endDate);
-  }, [timesheet]);
+  const dateRangeLabel = timesheet
+    ? formatDateRange(timesheet.startDate, timesheet.endDate)
+    : "";
 
   const handleAddTask = (dayKey: string) => {
     setDialogState({ mode: "add", dayKey });
@@ -198,7 +175,7 @@ export function TimesheetDetailClient({ timesheetId }: { timesheetId: string }) 
 
   const handleChangeTask = (dayKey: string, taskId: string, nextTask: TimesheetTask) => {
     setTasksByDay((prev) => {
-      const next: Record<string, TimesheetTask[]> = { ...prev };
+      const next: TimesheetTasksByDay = { ...prev };
       next[dayKey] = (next[dayKey] ?? []).map((t) => (t.id === taskId ? nextTask : t));
       return next;
     });
@@ -210,32 +187,27 @@ export function TimesheetDetailClient({ timesheetId }: { timesheetId: string }) 
 
   const handleDeleteTask = (dayKey: string, taskId: string) => {
     setTasksByDay((prev) => {
-      const next: Record<string, TimesheetTask[]> = { ...prev };
+      const next: TimesheetTasksByDay = { ...prev };
       next[dayKey] = (next[dayKey] ?? []).filter((t) => t.id !== taskId);
       return next;
     });
   };
 
-  const selectedTask = useMemo(() => {
-    if (!dialogState || dialogState.mode !== "edit") return null;
-    return (tasksByDay[dialogState.dayKey] ?? []).find((task) => task.id === dialogState.taskId) ?? null;
-  }, [dialogState, tasksByDay]);
+  const selectedTask =
+    !dialogState || dialogState.mode !== "edit"
+      ? null
+      : (tasksByDay[dialogState.dayKey] ?? []).find(
+          (task) => task.id === dialogState.taskId,
+        ) ?? null;
 
-  const projectOptions = useMemo(() => {
-    const values = new Set<string>();
+  const projectOptions = Array.from(
+    new Set([
+      "Project Name",
+      ...Object.values(tasksByDay).flatMap((tasks) => tasks.map((task) => task.project)),
+    ]),
+  );
 
-    for (const tasks of Object.values(tasksByDay)) {
-      for (const task of tasks) {
-        values.add(task.project);
-      }
-    }
-
-    values.add("Project Name");
-
-    return Array.from(values);
-  }, [tasksByDay]);
-
-  const handleSaveTask = (draft: Pick<TimesheetTask, "name" | "project" | "workType" | "hours">) => {
+  const handleSaveTask = (draft: TimesheetTaskDraft) => {
     if (!dialogState) return;
 
     const normalizedTask = {
@@ -247,7 +219,7 @@ export function TimesheetDetailClient({ timesheetId }: { timesheetId: string }) 
 
     if (dialogState.mode === "add") {
       setTasksByDay((prev) => {
-        const next: Record<string, TimesheetTask[]> = { ...prev };
+        const next: TimesheetTasksByDay = { ...prev };
         const list = [...(next[dialogState.dayKey] ?? [])];
         list.push({
           id: createClientTaskId(dialogState.dayKey),
@@ -269,11 +241,12 @@ export function TimesheetDetailClient({ timesheetId }: { timesheetId: string }) 
     setDialogState(null);
   };
 
-  const dialogKey = useMemo(() => {
-    if (!dialogState) return "task-dialog-closed";
-    if (dialogState.mode === "add") return `task-dialog-add-${dialogState.dayKey}`;
-    return `task-dialog-edit-${dialogState.dayKey}-${dialogState.taskId}`;
-  }, [dialogState]);
+  const dialogKey =
+    !dialogState
+      ? "task-dialog-closed"
+      : dialogState.mode === "add"
+        ? `task-dialog-add-${dialogState.dayKey}`
+        : `task-dialog-edit-${dialogState.dayKey}-${dialogState.taskId}`;
 
   return (
     <div className="w-full space-y-4">

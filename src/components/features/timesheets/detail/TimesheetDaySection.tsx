@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react";
 
-import type { TimesheetTask, TimesheetDay } from "@/types/timesheet-detail";
+import type { TimesheetTask, TimesheetDay } from "@/types/timesheet";
 
 import { Button } from "@/components/ui/button";
 import { TimesheetTaskRow } from "./TimesheetTaskRow";
