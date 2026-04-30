@@ -12,7 +12,7 @@ type Props = {
   day: TimesheetDay;
   tasks: TimesheetTask[];
   onAddTask: () => void;
-  onChangeTask: (taskId: string, next: TimesheetTask) => void;
+  onEditTask: (taskId: string) => void;
   onDeleteTask: (taskId: string) => void;
 };
 
@@ -20,7 +20,7 @@ export function TimesheetDaySection({
   day,
   tasks,
   onAddTask,
-  onChangeTask,
+  onEditTask,
   onDeleteTask,
 }: Props) {
   return (
@@ -33,7 +33,7 @@ export function TimesheetDaySection({
             <TimesheetTaskRow
               key={task.id}
               task={task}
-              onChange={(next) => onChangeTask(task.id, next)}
+              onEdit={() => onEditTask(task.id)}
               onDelete={() => onDeleteTask(task.id)}
             />
           ))
@@ -46,7 +46,7 @@ export function TimesheetDaySection({
         <Button
           type="button"
           variant="ghost"
-          className="w-full justify-center text-muted-foreground"
+          className="w-full justify-center text-muted-foreground cursor-pointer"
           onClick={onAddTask}
         >
           <Plus className="size-4" aria-hidden="true" />

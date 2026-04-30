@@ -16,6 +16,7 @@ import { getTimesheetSourceUrlById } from "@/lib/timesheets-data-source";
 
 import { Button } from "@/components/ui/button";
 import { TimesheetDaySection } from "./TimesheetDaySection";
+import { TaskEntryDialog } from "./TaskEntryDialog";
 
 import { TimesheetStatusPill } from "../TimesheetStatusPill";
 import { TimesheetDetailSkeleton } from "../../../skeleton/TimesheetDetailSkeleton";
@@ -45,9 +46,15 @@ function createTemplateTasks({
     id: makeStableTaskId(timesheetId, dayKey, index),
     name: "Homepage Development",
     project: "Project Name",
+    workType: "Development",
     hours: 4,
   }));
 }
+
+type DialogState =
+  | { mode: "add"; dayKey: string }
+  | { mode: "edit"; dayKey: string; taskId: string }
+  | null;
 
 function buildInitialTasks({
   timesheetId,
@@ -88,6 +95,7 @@ export function TimesheetDetailClient({ timesheetId }: { timesheetId: string }) 
   const [error, setError] = useState<string | null>(null);
 
   const [tasksByDay, setTasksByDay] = useState<Record<string, TimesheetTask[]>>({});
+  const [dialogState, setDialogState] = useState<DialogState>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -185,18 +193,7 @@ export function TimesheetDetailClient({ timesheetId }: { timesheetId: string }) 
   }, [timesheet]);
 
   const handleAddTask = (dayKey: string) => {
-    setTasksByDay((prev) => {
-      const next: Record<string, TimesheetTask[]> = { ...prev };
-      const list = [...(next[dayKey] ?? [])];
-      list.push({
-        id: createClientTaskId(dayKey),
-        name: "New task",
-        project: "Project",
-        hours: 0,
-      });
-      next[dayKey] = list;
-      return next;
-    });
+    setDialogState({ mode: "add", dayKey });
   };
 
   const handleChangeTask = (dayKey: string, taskId: string, nextTask: TimesheetTask) => {
@@ -207,6 +204,10 @@ export function TimesheetDetailClient({ timesheetId }: { timesheetId: string }) 
     });
   };
 
+  const handleEditTask = (dayKey: string, taskId: string) => {
+    setDialogState({ mode: "edit", dayKey, taskId });
+  };
+
   const handleDeleteTask = (dayKey: string, taskId: string) => {
     setTasksByDay((prev) => {
       const next: Record<string, TimesheetTask[]> = { ...prev };
@@ -214,6 +215,65 @@ export function TimesheetDetailClient({ timesheetId }: { timesheetId: string }) 
       return next;
     });
   };
+
+  const selectedTask = useMemo(() => {
+    if (!dialogState || dialogState.mode !== "edit") return null;
+    return (tasksByDay[dialogState.dayKey] ?? []).find((task) => task.id === dialogState.taskId) ?? null;
+  }, [dialogState, tasksByDay]);
+
+  const projectOptions = useMemo(() => {
+    const values = new Set<string>();
+
+    for (const tasks of Object.values(tasksByDay)) {
+      for (const task of tasks) {
+        values.add(task.project);
+      }
+    }
+
+    values.add("Project Name");
+
+    return Array.from(values);
+  }, [tasksByDay]);
+
+  const handleSaveTask = (draft: Pick<TimesheetTask, "name" | "project" | "workType" | "hours">) => {
+    if (!dialogState) return;
+
+    const normalizedTask = {
+      name: draft.name.trim() || "Untitled task",
+      project: draft.project.trim() || "Project Name",
+      workType: draft.workType.trim() || "Development",
+      hours: Math.max(0, Number.isFinite(draft.hours) ? draft.hours : 0),
+    };
+
+    if (dialogState.mode === "add") {
+      setTasksByDay((prev) => {
+        const next: Record<string, TimesheetTask[]> = { ...prev };
+        const list = [...(next[dialogState.dayKey] ?? [])];
+        list.push({
+          id: createClientTaskId(dialogState.dayKey),
+          ...normalizedTask,
+        });
+        next[dialogState.dayKey] = list;
+        return next;
+      });
+      setDialogState(null);
+      return;
+    }
+
+    if (!selectedTask) return;
+
+    handleChangeTask(dialogState.dayKey, dialogState.taskId, {
+      ...selectedTask,
+      ...normalizedTask,
+    });
+    setDialogState(null);
+  };
+
+  const dialogKey = useMemo(() => {
+    if (!dialogState) return "task-dialog-closed";
+    if (dialogState.mode === "add") return `task-dialog-add-${dialogState.dayKey}`;
+    return `task-dialog-edit-${dialogState.dayKey}-${dialogState.taskId}`;
+  }, [dialogState]);
 
   return (
     <div className="w-full space-y-4">
@@ -274,13 +334,27 @@ export function TimesheetDetailClient({ timesheetId }: { timesheetId: string }) 
                 day={day}
                 tasks={tasksByDay[day.key] ?? []}
                 onAddTask={() => handleAddTask(day.key)}
-                onChangeTask={(taskId, next) => handleChangeTask(day.key, taskId, next)}
+                onEditTask={(taskId) => handleEditTask(day.key, taskId)}
                 onDeleteTask={(taskId) => handleDeleteTask(day.key, taskId)}
               />
             ))}
           </div>
         )}
       </div>
+
+      <TaskEntryDialog
+        key={dialogKey}
+        mode={dialogState?.mode ?? "add"}
+        open={dialogState !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDialogState(null);
+          }
+        }}
+        onSave={handleSaveTask}
+        initialTask={selectedTask}
+        projectOptions={projectOptions}
+      />
     </div>
   );
 }

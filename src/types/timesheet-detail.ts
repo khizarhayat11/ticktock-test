@@ -2,6 +2,7 @@ export type TimesheetTask = {
   id: string;
   name: string;
   project: string;
+  workType: string;
   hours: number;
 };
 export type TimesheetDay = {

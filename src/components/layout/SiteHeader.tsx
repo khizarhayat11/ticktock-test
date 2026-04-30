@@ -86,7 +86,9 @@ export function SiteHeader() {
               {userLabel}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={handleLogout}>Logout</DropdownMenuItem>
+            <DropdownMenuItem onSelect={handleLogout} className="cursor-pointer">
+              Logout
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenuRoot>
       </div>
