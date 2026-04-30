@@ -1,6 +1,12 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { Timesheet, TimesheetJson, TimesheetStatus } from "@/types/timesheet";
+import type {
+  Timesheet,
+  TimesheetDay,
+  TimesheetJson,
+  TimesheetStatus,
+  TimesheetTasksByDay,
+} from "@/types/timesheet";
 
 
 // Generates a unique ID for a timesheet task based on the timesheet ID, day key, and task index.
@@ -77,6 +83,26 @@ function eachDayInclusive(start: Date, end: Date): Date[] {
   }
 
   return days;
+}
+
+function buildTimesheetDays(start: Date, end: Date): TimesheetDay[] {
+  return eachDayInclusive(start, end).map((date) => ({
+    key: dayKey(date),
+    date,
+    label: formatDayLabel(date),
+  }));
+}
+
+function sumTimesheetHours(tasksByDay: TimesheetTasksByDay) {
+  let total = 0;
+
+  for (const tasks of Object.values(tasksByDay)) {
+    for (const task of tasks) {
+      total += Number.isFinite(task.hours) ? task.hours : 0;
+    }
+  }
+
+  return total;
 }
 
 // Generates an array of Date objects representing each day in the inclusive range between the start and end dates.
@@ -187,6 +213,7 @@ function parseTimesheetJson(value: unknown): Timesheet {
 
 export {
   STATUS_LABEL,
+  buildTimesheetDays,
   dayKey,
   eachDayInclusive,
   formatDateRange,
@@ -196,6 +223,7 @@ export {
   parseDateOnly,
   parseTimesheetJson,
   parseTimesheetsJson,
+  sumTimesheetHours,
 };
 
 export function cn(...inputs: ClassValue[]) {

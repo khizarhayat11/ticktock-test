@@ -20,6 +20,27 @@ export type Timesheet = {
   status: TimesheetStatus;
 };
 
+export type TimesheetTask = {
+  id: string;
+  name: string;
+  project: string;
+  workType: string;
+  hours: number;
+};
+
+export type TimesheetTaskDraft = Pick<
+  TimesheetTask,
+  "name" | "project" | "workType" | "hours"
+>;
+
+export type TimesheetTasksByDay = Record<string, TimesheetTask[]>;
+
+export type TimesheetDay = {
+  key: string;
+  date: Date;
+  label: string;
+};
+
 export type TimesheetsFiltersState = {
   status: TimesheetStatus | "all";
   month: string | "all";

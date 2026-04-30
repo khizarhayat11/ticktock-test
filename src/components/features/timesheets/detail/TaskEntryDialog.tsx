@@ -2,9 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ChevronDown, Minus, Plus } from "lucide-react";
-
 import type { TimesheetTask } from "@/types/timesheet-detail";
-
 import { Button } from "@/components/ui/button";
 import {
   DialogContent,
@@ -102,7 +100,7 @@ export function TaskEntryDialog({
                 onChange={(e) =>
                   setDraft((current) => ({ ...current, project: e.target.value }))
                 }
-                className="h-10 w-full appearance-none rounded-lg border border-input bg-background px-3 pr-10 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="h-10 w-full cursor-pointer appearance-none rounded-lg border border-input bg-background px-3 pr-10 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 {availableProjects.map((project) => (
                   <option key={project} value={project}>
@@ -123,7 +121,7 @@ export function TaskEntryDialog({
                 onChange={(e) =>
                   setDraft((current) => ({ ...current, workType: e.target.value }))
                 }
-                className="h-10 w-full appearance-none rounded-lg border border-input bg-background px-3 pr-10 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="h-10 w-full cursor-pointer appearance-none rounded-lg border border-input bg-background px-3 pr-10 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 {DEFAULT_WORK_TYPES.map((type) => (
                   <option key={type} value={type}>
@@ -193,14 +191,14 @@ export function TaskEntryDialog({
           <Button
             type="button"
             variant="outline"
-            className="sm:flex-1"
+            className="sm:flex-1 cursor-pointer"
             onClick={() => onOpenChange(false)}
           >
             Cancel
           </Button>
           <Button
             type="button"
-            className="sm:flex-1"
+            className="sm:flex-1 cursor-pointer"
             disabled={!canSubmit}
             onClick={() => onSave(draft)}
           >

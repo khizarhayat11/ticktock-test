@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import { MoreHorizontal } from "lucide-react";
-import type { TimesheetTask } from "@/types/timesheet-detail";
+import type { TimesheetTask } from "@/types/timesheet";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,10 +19,7 @@ type Props = {
 };
 
 export function TimesheetTaskRow({ task, onEdit, onDelete }: Props) {
-  const hoursLabel = useMemo(() => {
-    const value = Number.isFinite(task.hours) ? task.hours : 0;
-    return `${value} hrs`;
-  }, [task.hours]);
+  const hoursLabel = `${Number.isFinite(task.hours) ? task.hours : 0} hrs`;
 
   return (
     <div className={cn("flex items-center gap-3 rounded-lg border bg-background px-3 py-3")}>
