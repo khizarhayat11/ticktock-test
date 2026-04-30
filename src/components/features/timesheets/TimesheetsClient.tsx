@@ -127,9 +127,6 @@ export function TimesheetsClient() {
           </div>
         )}
 
-        {isLoading && (
-          <div className="px-4 pb-2 text-sm text-muted-foreground">Loading timesheets…</div>
-        )}
         <div className="p-4">
           <TimesheetsFilters
             months={availableMonths}
